@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RenPy Studio Ultimate - Visual Novel IDE</title>
+    <!-- SPLIT CSS -->
+    <link rel="stylesheet" href="style_design_system.css">
+    <link rel="stylesheet" href="style_app.css">
+    <link rel="stylesheet" href="style_responsive.css">
+    <!-- END SPLIT CSS -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/lottie-web/5.12.2/lottie.min.js"></script>
+</head>
+<body>
+    <!-- Loading Screen -->
+    <div id="loadingScreen" class="loading-screen active">
+        <div class="loading-content">
+            <div class="loading-logo">
+                <i class="fas fa-book-open"></i>
+            </div>
+            <h1 class="loading-title">RenPy Studio Ultimate</h1>
+            <div class="loading-spinner"></div>
+            <p class="loading-tip">Loading your creative workspace...</p>
+            <div class="loading-progress">
+                <div class="loading-progress-bar" id="loadingProgress"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Profile Modal -->
+    <div id="profileModal" class="modal">
+        <div class="modal-content profile-modal">
+            <h2><i class="fas fa-user-circle"></i> Welcome to RenPy Studio</h2>
+            <div class="profile-section">
+                <h3>Select Profile</h3>
+                <div id="profileList" class="profile-list"></div>
+                <button class="btn btn-primary" onclick="showCreateProfile()">
+                    <i class="fas fa-plus"></i> Create New Profile
+                </button>
+            </div>
+            <div id="createProfileSection" class="profile-section hidden">
+                <h3>Create Profile</h3>
+                <input type="text" id="profileName" class="form-control" placeholder="Enter your name">
+                <input type="text" id="profileAvatar" class="form-control" placeholder="Avatar emoji (optional)" maxlength="2">
+                <div class="btn-group">
+                    <button class="btn btn-primary" onclick="createProfile()">
+                        <i class="fas fa-check"></i> Create
+                    </button>
+                    <button class="btn btn-secondary" onclick="hideCreateProfile()">
+                        <i class="fas fa-times"></i> Cancel
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Menu -->
+    <div id="mainMenu" class="main-menu hidden">
+        <div class="main-menu-content">
+            <div class="menu-header">
+                <i class="fas fa-book-open"></i>
+                <h1>RenPy Studio Ultimate</h1>
+                <p class="menu-subtitle">Create Amazing Visual Novels</p>
+            </div>
+            <nav class="menu-nav">
+                <button class="menu-btn" onclick="startIDE()">
+                    <i class="fas fa-play"></i>
+                    <span>Start Creating</span>
+                </button>
+                <button class="menu-btn" onclick="loadProject()">
+                    <i class="fas fa-folder-open"></i>
+                    <span>Load Project</span>
+                </button>
+                <!-- Removed "Options" button -->
+                <button class="menu-btn" onclick="showSettings()">
+                    <i class="fas fa-sliders-h"></i>
+                    <span>Settings</span>
+                </button>
+                <button class="menu-btn" onclick="showTutorial()">
+                    <i class="fas fa-graduation-cap"></i>
+                    <span>Tutorial</span>
+                </button>
+                <button class="menu-btn" onclick="showAbout()">
+                    <i class="fas fa-info-circle"></i>
+                    <span>About</span>
+                </button>
+            </nav>
+            <div class="menu-footer">
+                <p>Version 3.0 | Current User: <span id="currentUserName"></span></p>
+            </div>
+        </div>
+    </div>
+
+    <!-- IDE Workspace -->
+    <div id="ideWorkspace" class="ide-workspace hidden">
+        <!-- Header -->
+        <header class="ide-header">
+            <div class="header-left">
+                <!-- Updated to toggle left sidebar -->
+                <button class="btn btn-icon" onclick="toggleLeftSidebar()" title="Toggle File Explorer">
+                    <i class="fas fa-bars"></i>
+                </button>
+                <h1 class="ide-title">
+                    <i class="fas fa-book-open"></i>
+                    RenPy Studio
+                </h1>
+                <div class="project-name" id="projectNameDisplay">New Project</div>
+            </div>
+            <div class="header-center">
+                <div class="btn-group">
+                    <button class="btn btn-success" onclick="runPreview()" title="Run Preview (F5)">
+                        <i class="fas fa-play"></i> Run
+                    </button>
+                    <button class="btn btn-secondary" onclick="stopPreview()" title="Stop">
+                        <i class="fas fa-stop"></i>
+                    </button>
+                    <button class="btn btn-primary" onclick="saveProject()" title="Save (Ctrl+S)">
+                        <i class="fas fa-save"></i> Save
+                    </button>
+                </div>
+            </div>
+            <div class="header-right">
+                <!-- NEW: Toggle button for Right Sidebar -->
+                <button class="btn btn-icon" onclick="toggleRightSidebar()" title="Toggle Side Panel">
+                    <i class="fas fa-columns"></i>
+                </button>
+                <button class="btn btn-icon" onclick="showAIAssistant()" title="AI Assistant">
+                    <i class="fas fa-robot"></i>
+                </button>
+                <button class="btn btn-icon" onclick="showThemes()" title="Themes">
+                    <i class="fas fa-palette"></i>
+                </button>
+                <button class="btn btn-icon" onclick="showHelp()" title="Help">
+                    <i class="fas fa-question-circle"></i>
+                </button>
+                <div class="user-profile" onclick="showProfileMenu()">
+                    <span id="userAvatar">👤</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <div class="ide-main" id="ideMain">
+            <!-- Left Sidebar -->
+            <aside class="ide-sidebar left-sidebar" id="leftSidebar">
+                <div class="sidebar-tabs">
+                    <button class="sidebar-tab active" data-tab="files" onclick="switchSidebarTab('files')">
+                        <i class="fas fa-folder"></i> Files
+                    </button>
+                    <button class="sidebar-tab" data-tab="assets" onclick="switchSidebarTab('assets')">
+                        <i class="fas fa-images"></i> Assets
+                    </button>
+                    <button class="sidebar-tab" data-tab="characters" onclick="switchSidebarTab('characters')">
+                        <i class="fas fa-users"></i> Characters
+                    </button>
+                </div>
+                
+                <!-- Files Tab -->
+                <div class="sidebar-content" id="filesTab">
+                    <div class="sidebar-header">
+                        <h3>Project Files</h3>
+                        <button class="btn btn-icon btn-sm" onclick="createNewFile()" title="New File">
+                            <i class="fas fa-plus"></i>
+                        </button>
+                    </div>
+                    <div id="fileTree" class="file-tree"></div>
+                </div>
+
+                <!-- Assets Tab -->
+                <div class="sidebar-content hidden" id="assetsTab">
+                    <div class="sidebar-header">
+                        <h3>Asset Manager</h3>
+                        <button class="btn btn-icon btn-sm" onclick="uploadAsset()" title="Upload Asset">
+                            <i class="fas fa-upload"></i>
+                        </button>
+                    </div>
+                    <div class="asset-filters">
+                        <button class="filter-btn active" data-filter="all" onclick="filterAssets('all')">All</button>
+                        <button class="filter-btn" data-filter="images" onclick="filterAssets('images')">Images</button>
+                        <button class="filter-btn" data-filter="audio" onclick="filterAssets('audio')">Audio</button>
+                        <button class="filter-btn" data-filter="video" onclick="filterAssets('video')">Video</button>
+                    </div>
+                    <div id="assetGrid" class="asset-grid"></div>
+                </div>
+
+                <!-- Characters Tab -->
+                <div class="sidebar-content hidden" id="charactersTab">
+                    <div class="sidebar-header">
+                        <h3>Characters</h3>
+                        <button class="btn btn-icon btn-sm" onclick="createCharacter()" title="New Character">
+                            <i class="fas fa-plus"></i>
+                        </button>
+                    </div>
+                    <div id="characterList" class="character-list"></div>
+                </div>
+            </aside>
+
+            <!-- Center Editor -->
+            <main class="ide-center" id="ideCenter">
+                <div class="editor-tabs" id="editorTabs"></div>
+                <div class="editor-container">
+                    <div class="editor-toolbar">
+                        <div class="editor-mode">
+                            <button class="mode-btn active" data-mode="code" onclick="switchEditorMode('code')">
+                                <i class="fas fa-code"></i> Code
+                            </button>
+                            <button class="mode-btn" data-mode="visual" onclick="switchEditorMode('visual')">
+                                <i class="fas fa-project-diagram"></i> Visual
+                            </button>
+                            <button class="mode-btn" data-mode="split" onclick="switchEditorMode('split')">
+                                <i class="fas fa-columns"></i> Split
+                            </button>
+                        </div>
+                        <div class="editor-actions">
+                            <button class="btn btn-icon btn-sm" onclick="showSnippets()" title="Code Snippets">
+                                <i class="fas fa-code"></i>
+                            </button>
+                            <button class="btn btn-icon btn-sm" onclick="formatCode()" title="Format Code">
+                                <i class="fas fa-indent"></i>
+                            </button>
+                            <button class="btn btn-icon btn-sm" onclick="showFind()" title="Find (Ctrl+F)">
+                                <i class="fas fa-search"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <!-- NEW: Find Bar -->
+                    <div class="find-bar hidden" id="findBar">
+                        <input type="text" id="findInput" class="form-control" placeholder="Find...">
+                        <button class="btn btn-icon btn-sm" id="findPrevBtn" title="Previous">
+                            <i class="fas fa-chevron-up"></i>
+                        </button>
+                        <button class="btn btn-icon btn-sm" id="findNextBtn" title="Next">
+                            <i class="fas fa-chevron-down"></i>
+                        </button>
+                        <button class="btn btn-icon btn-sm" onclick="hideFind()" title="Close">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                    <!-- END: Find Bar -->
+                    <div id="codeEditor" class="code-editor">
+                        <div class="editor-line-numbers" id="lineNumbers"></div>
+                        <textarea id="editorTextarea" class="editor-textarea" spellcheck="false"></textarea>
+                        <div class="editor-suggestions hidden" id="editorSuggestions"></div>
+                    </div>
+                    <div id="visualEditor" class="visual-editor hidden">
+                        <canvas id="visualCanvas"></canvas>
+                        <div class="visual-toolbar">
+                            <button class="btn btn-sm" onclick="addVisualNode('dialogue')">
+                                <i class="fas fa-comment"></i> Dialogue
+                            </button>
+                            <button class="btn btn-sm" onclick="addVisualNode('choice')">
+                                <i class="fas fa-code-branch"></i> Choice
+                            </button>
+                            <button class="btn btn-sm" onclick="addVisualNode('scene')">
+                                <i class="fas fa-image"></i> Scene
+                            </button>
+                            <button class="btn btn-sm" onclick="addVisualNode('character')">
+                                <i class="fas fa-user"></i> Character
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </main>
+
+            <!-- Right Sidebar -->
+            <aside class="ide-sidebar right-sidebar" id="rightSidebar">
+                <div class="sidebar-tabs">
+                    <button class="sidebar-tab active" data-tab="preview" onclick="switchRightTab('preview')">
+                        <i class="fas fa-eye"></i> Preview
+                    </button>
+                    <button class="sidebar-tab" data-tab="ai" onclick="switchRightTab('ai')">
+                        <i class="fas fa-robot"></i> AI
+                    </button>
+                    <button class="sidebar-tab" data-tab="variables" onclick="switchRightTab('variables')">
+                        <i class="fas fa-database"></i> Variables
+                    </button>
+                </div>
+
+                <!-- Preview Tab -->
+                <div class="sidebar-content" id="previewTab">
+                    <div class="sidebar-header">
+                        <h3>Live Preview</h3>
+                        <!-- THIS IS THE NEW WRAPPER AND BUTTON -->
+                        <div class="btn-group">
+                            <button class="btn btn-icon btn-sm" onclick="toggleAutoReload()" title="Auto Reload">
+                                <i class="fas fa-sync" id="autoReloadIcon"></i>
+                            </button>
+                            <button class="btn btn-icon btn-sm" onclick="maximizePreview()" title="Maximize Preview">
+                                <i id="maximizePreviewIcon" class="fas fa-expand-alt"></i>
+                            </button>
+                        </div>
+                        <!-- END OF CHANGE -->
+                    </div>
+                    <div id="previewWindow" class="preview-window">
+                        <div class="preview-placeholder">
+                            <i class="fas fa-play-circle"></i>
+                            <p>Click Run to preview your game</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- AI Tab -->
+                <div class="sidebar-content hidden" id="aiTab">
+                    <div class="sidebar-header">
+                        <h3>AI Assistant</h3>
+                    </div>
+                    
+                    <label for="aiMode" class="form-label-sm">Mode</label>
+                    <div class="ai-modes">
+                        <select id="aiMode" class="form-control">
+                            <option value="dialogue">Dialogue Writer</option>
+                            <option value="scene">Scene Description</option>
+                            <option value="character">Character Creator</option>
+                            <option value="plot">Plot Generator</option>
+                            <option value="choices">Choice Generator</option>
+                        </select>
+                    </div>
+
+                    <label for="aiAction" class="form-label-sm">Action</label>
+                    <select id="aiAction" class="form-control">
+                        <option value="append">Append to current file</option>
+                        <option value="new_project">Create new project</option>
+                    </select>
+
+                    <textarea id="aiPrompt" class="form-control" placeholder="Describe what you want to create..."></textarea>
+                    <button class="btn btn-primary btn-block" onclick="generateWithAI()">
+                        <i class="fas fa-magic"></i> Generate
+                    </button>
+                    <div id="aiOutput" class="ai-output"></div>
+                </div>
+
+                <!-- Variables Tab -->
+                <div class="sidebar-content hidden" id="variablesTab">
+                    <div class="sidebar-header">
+                        <h3>Game Variables</h3>
+                    </div>
+                    <!-- NEW UI for Variables -->
+                    <div class="variable-add-form">
+                        <input type="text" id="variableName" class="form-control" placeholder="Variable Name (e.g., points)">
+                        <input type="text" id="variableValue" class="form-control" placeholder="Initial Value (e.g., 0 or 'text')">
+                        <button class="btn btn-primary btn-sm btn-block" onclick="doAddVariable()">
+                            <i class="fas fa-plus"></i> Add Variable
+                        </button>
+                    </div>
+                    <div id="variableList" class="variable-list">
+                        <!-- Variables will be rendered here by assets.js -->
+                    </div>
+                    <!-- END NEW UI -->
+                </div>
+            </aside>
+        </div>
+
+        <!-- Status Bar -->
+        <footer class="ide-footer">
+            <div class="footer-left">
+                <span id="statusMessage">Ready</span>
+            </div>
+            <div class="footer-center">
+                <span>Lines: <span id="lineCount">0</span></span>
+                <span>Words: <span id="wordCount">0</span></span>
+                <span>Characters: <span id="charCount">0</span></span>
+            </div>
+            <div class="footer-right">
+                <span id="cursorPosition">Ln 1, Col 1</span>
+            </div>
+        </footer>
+    </div>
+
+    <!-- Modals -->
+    <!-- AI Assistant Modal -->
+   <div id="aiAssistantModal" class="modal">
+        <div class="modal-content modal-large">
+            <div class="modal-header">
+                <h2><i class="fas fa-robot"></i> AI Assistant</h2>
+                <button class="btn-close" onclick="closeModal('aiAssistantModal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="ai-assistant-grid">
+                    <div class="ai-feature-card" onclick="useAIFeature('dialogue')">
+                        <i class="fas fa-comments"></i>
+                        <h3>Dialogue Writer</h3>
+                        <p>Generate natural conversations</p>
+                    </div>
+                    <div class="ai-feature-card" onclick="useAIFeature('scene')">
+                        <i class="fas fa-image"></i>
+                        <h3>Scene Generator</h3>
+                        <p>Create vivid scene descriptions</p>
+                    </div>
+                    <div class="ai-feature-card" onclick="useAIFeature('character')">
+                        <i class="fas fa-user"></i>
+                        <h3>Character Creator</h3>
+                        <p>Design unique characters</p>
+                    </div>
+                    <div class="ai-feature-card" onclick="useAIFeature('plot')">
+                        <i class="fas fa-book"></i>
+                        <h3>Plot Generator</h3>
+                        <p>Generate story ideas</p>
+                    </div>
+                    <div class="ai-feature-card" onclick="useAIFeature('translate')">
+                        <i class="fas fa-language"></i>
+                        <h3>Translator</h3>
+                        <p>Translate to 10 languages</p>
+                    </div>
+                    <div class="ai-feature-card" onclick="useAIFeature('voice')">
+                        <i class="fas fa-microphone"></i>
+                        <h3>Voice Synthesis</h3>
+                        <p>Generate voice audio</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Theme Selector Modal -->
+    <div id="themeModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2><i class="fas fa-palette"></i> Themes</h2>
+                <button class="btn-close" onclick="closeModal('themeModal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="theme-grid" id="themeGrid"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Settings Modal -->
+    <div id="settingsModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2><i class="fas fa-cog"></i> Settings</h2>
+                <button class="btn-close" onclick="closeModal('settingsModal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="settings-section">
+                    <h3>Editor</h3>
+                    <label>
+                        <input type="checkbox" id="settingAutoSave" onchange="updateSettings()">
+                        Auto-save every 2 minutes
+                    </label>
+                    <label>
+                        <input type="checkbox" id="settingLineNumbers" onchange="updateSettings()" checked>
+                        Show line numbers
+                    </label>
+                    <label>
+                        <input type="checkbox" id="settingSyntaxHighlight" onchange="updateSettings()" checked>
+                        Syntax highlighting
+                    </label>
+                    <label>
+                        Font Size:
+                        <input type="range" id="settingFontSize" min="10" max="24" value="14" onchange="updateSettings()">
+                        <span id="fontSizeValue">14px</span>
+                    </label>
+                </div>
+                <div class="settings-section">
+                    <h3>Preview</h3>
+                    <label>
+                        <input type="checkbox" id="settingAutoReload" onchange="updateSettings()" checked>
+                        Auto-reload on save
+                    </label>
+                    <label>
+                        <input type="checkbox" id="settingShowDebug" onchange="updateSettings()">
+                        Show debug info
+                    </label>
+                </div>
+                <div class="settings-section">
+                    <h3>Accessibility</h3>
+                    <label>
+                        <input type="checkbox" id="settingHighContrast" onchange="updateSettings()">
+                        High contrast mode
+                    </label>
+                    <label>
+                        <input type="checkbox" id="settingDyslexicFont" onchange="updateSettings()">
+                        Dyslexic-friendly font
+                    </label>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Notification Container -->
+    <div id="notificationContainer" class="notification-container"></div>
+
+    <!-- Scripts -->
+    <script src="utils.js"></script>
+    <script src="profile.js"></script>
+    <script src="themes.js"></script>
+    <script src="editor.js"></script>
+    <script src="parser.js"></script>
+    <script src="preview.js"></script>
+    <script src="ai-assistant.js"></script>
+    <script src="project.js"></script>
+    <script src="assets.js"></script>
+    <script src="main.js"></script>
+</body>
+</html>

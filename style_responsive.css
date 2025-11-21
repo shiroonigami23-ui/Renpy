@@ -1,0 +1,62 @@
+/* Responsive Design */
+@media (max-width: 1024px) {
+  /* The desktop-first styles handle the collapsing.
+    This media query will just handle mobile-specific layout.
+  */
+}
+
+@media (max-width: 768px) {
+  .ide-header {
+    flex-wrap: wrap;
+    gap: var(--space-sm);
+  }
+
+  .header-center {
+    order: 3;
+    width: 100%;
+    justify-content: center;
+  }
+
+  .editor-tabs {
+    font-size: var(--font-size-xs);
+  }
+
+  /* Make sidebars take up more space on mobile */
+  .left-sidebar {
+    width: 90%;
+    max-width: 300px;
+    position: absolute;
+    height: calc(100vh - 120px); /* Full height minus header/footer */
+    z-index: 1000;
+  }
+
+  .right-sidebar {
+    width: 90%;
+    max-width: 350px;
+    position: absolute;
+    height: calc(100vh - 120px); /* Full height minus header/footer */
+    z-index: 1000;
+    right: 0; /* Align to the right */
+  }
+
+  /* Default collapsed state for mobile */
+  .left-sidebar:not(.active) {
+     width: 0;
+     transform: translateX(-100%);
+     border-right: none;
+  }
+
+  .right-sidebar:not(.active) {
+     width: 0;
+     transform: translateX(100%);
+     border-left: none;
+  }
+
+  .left-sidebar.active {
+    transform: translateX(0);
+  }
+  .right-sidebar.active {
+    transform: translateX(0);
+  }
+
+}
