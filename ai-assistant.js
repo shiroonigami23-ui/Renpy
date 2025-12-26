@@ -2,7 +2,7 @@
 
 // AI Assistant Integration
 
-const apikey = "AIzaSyDpeXSmDxHQB6pLVlpx6wfYyM8fVkhPUPY"; 
+const apikey = process.env.FIREBASE_KEY_AUTO_1; 
 const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apikey}`;
 
 
